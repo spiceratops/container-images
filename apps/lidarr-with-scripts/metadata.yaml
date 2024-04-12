@@ -1,5 +1,5 @@
 ---
-app: lidarr
+app: lidarr-with-scripts
 semver: true
 channels:
   - name: master
