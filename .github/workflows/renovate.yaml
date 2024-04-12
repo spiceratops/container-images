@@ -1,35 +1,35 @@
 ---
-# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "Renovate"
+  # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+  name: "Renovate"
 
-on:
+  on:
     workflow_dispatch:
-    inputs:
+      inputs:
         dryRun:
-        description: Dry Run
-        default: "false"
-        required: false
+          description: Dry Run
+          default: "false"
+          required: false
         logLevel:
-        description: Log Level
-        default: debug
-        required: false
+          description: Log Level
+          default: debug
+          required: false
         version:
-        description: Renovate version
-        default: latest
-        required: false
+          description: Renovate version
+          default: latest
+          required: false
     schedule:
-    - cron: "0 * * * *" # Every hour
+      - cron: "0 * * * *" # Every hour
     push:
-    branches: ["main"]
-    paths:
+      branches: ["main"]
+      paths:
         - .github/renovate.json5
         - .github/renovate/**.json5
 
-concurrency:
+  concurrency:
     group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
     cancel-in-progress: true
 
-env:
+  env:
     LOG_LEVEL: "${{ inputs.logLevel || 'debug' }}"
     RENOVATE_AUTODISCOVER: true
     RENOVATE_AUTODISCOVER_FILTER: "${{ github.repository }}"
@@ -38,26 +38,26 @@ env:
     RENOVATE_PLATFORM_COMMIT: true
     WORKFLOW_RENOVATE_VERSION: "${{ inputs.version || 'latest' }}"
 
-jobs:
+  jobs:
     renovate:
-    name: Renovate
-    runs-on: ubuntu-latest
-    steps:
+      name: Renovate
+      runs-on: ubuntu-latest
+      steps:
         - name: Generate Token
-        uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
+          uses: actions/create-github-app-token@v1
+          id: app-token
+          with:
             app-id: "${{ secrets.BOT_APP_ID }}"
             private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
 
         - name: Checkout
-        uses: actions/checkout@v4
-        with:
+          uses: actions/checkout@v4
+          with:
             token: "${{ steps.app-token.outputs.token }}"
 
         - name: Renovate
-        uses: renovatebot/github-action@v40.1.8
-        with:
+          uses: renovatebot/github-action@v40.1.8
+          with:
             configurationFile: .github/renovate.json5
             token: "${{ steps.app-token.outputs.token }}"
             renovate-version: "${{ env.WORKFLOW_RENOVATE_VERSION }}"
