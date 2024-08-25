@@ -1,5 +1,5 @@
 ---
-app: lidarr
+app: wyoming-glados
 semver: true
 channels:
   - name: master
