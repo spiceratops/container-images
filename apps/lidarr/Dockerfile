@@ -1,5 +1,5 @@
 ARG VERSION
-FROM docker.io/library/golang:1.22-alpine as envsubst
+FROM docker.io/library/golang:1.23-alpine as envsubst
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
@@ -11,7 +11,7 @@ ENV CGO_ENABLED=0 \
   GOARM=${TARGETVARIANT}
 RUN go install -ldflags="-s -w" github.com/drone/envsubst/cmd/envsubst@latest
 
-FROM docker.io/library/alpine:3.19
+FROM docker.io/library/alpine:3.20
 
 ARG TARGETPLATFORM
 ARG VERSION
