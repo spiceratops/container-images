@@ -31,3 +31,5 @@ COPY ./entrypoint.sh ./
 EXPOSE 10201
 
 ENTRYPOINT ["bash", "/entrypoint.sh"]
+
+LABEL org.opencontainers.image.source="https://github.com/nalf3in/wyoming-glados"
