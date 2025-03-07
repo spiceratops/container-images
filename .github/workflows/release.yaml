@@ -1,0 +1,182 @@
+---
+  # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+  name: "Docker: Build and Push"
+
+  on:
+    workflow_dispatch:
+      inputs:
+        apps:
+          description: "Comma separated list of apps to build"
+          required: false
+          type: string
+          default: ""
+    push:
+      branches:
+        - main
+      paths:
+        - apps/**
+        - .github/workflows/release.yaml
+        - .github/workflows/workflow_call-build_image.yaml
+    pull_request:
+      paths:
+        - apps/**
+        - .github/workflows/release.yaml
+        - .github/workflows/workflow_call-build_image.yaml
+      types:
+        - opened
+        - synchronize
+        - reopened
+
+  jobs:
+    prepare:
+      name: Prepare data required for workflow
+      runs-on: ubuntu-latest
+      outputs:
+        images-to-build: ${{ steps.apps-to-build.outputs.appsToBuild }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Determine changed apps
+          uses: tj-actions/changed-files@v45
+          id: changed-apps
+          if: ${{ github.event_name != 'workflow_dispatch' }}
+          with:
+            dir_names: true
+            dir_names_max_depth: "1"
+            path: apps
+            separator: ","
+
+        - name: Get specified apps
+          id: specified-apps
+          if: ${{ github.event_name == 'workflow_dispatch' }}
+          uses: actions/github-script@v7
+          with:
+            script: |
+              const fs = require('fs');
+              let input = '${{ inputs.apps }}';
+              let cwd = process.cwd();
+
+              let appsToBuild = []
+              if (input === '') {
+                console.log("Empty apps input, scanning for apps in repository");
+                const globber = await glob.create('apps/*', { implicitDescendants: false });
+                for await (const file of globber.globGenerator()) {
+                  if (fs.lstatSync(file).isDirectory()) {
+                    relativePath = file.slice(`${cwd}/apps/`.length);
+                    appsToBuild.push(relativePath);
+                  }
+                }
+              } else {
+                appsToBuild = JSON.parse(input);
+                appsToBuild.forEach(function (app) {
+                  const fullPath = `${cwd}/apps/${app}`;
+                  if (!fs.existsSync(fullPath)) {
+                    core.setFailed(`App ${app} does not exist in repository`);
+                    process.exit(1);
+                  }
+                  if (!fs.lstatSync(fullPath).isDirectory()) {
+                    core.setFailed(`${app} is not a valid directory`);
+                    process.exit(1);
+                  }
+                });
+              }
+
+              core.setOutput('appsToBuild', appsToBuild.join(','));
+
+        - name: Consolidate apps to build
+          id: apps-to-build
+          uses: actions/github-script@v7
+          with:
+            script: |
+              let appsToBuild = '${{ github.event_name == 'workflow_dispatch' && steps.specified-apps.outputs.appsToBuild || steps.changed-apps.outputs.all_changed_files }}';
+              core.setOutput('appsToBuild', appsToBuild);
+
+        - name: Add summary
+          env:
+            APPS_TO_BUILD: "${{ steps.apps-to-build.outputs.appsToBuild }}"
+          run: |
+            IFS=',' read -r -a images <<< "${APPS_TO_BUILD}"
+            echo "### Apps to build:" > "$GITHUB_STEP_SUMMARY"
+            for image in "${images[@]}"; do
+              echo "- ${image}" >> "$GITHUB_STEP_SUMMARY"
+            done
+
+    generate-matrix:
+      name: Generate build matrix
+      runs-on: ubuntu-latest
+      outputs:
+        matrix: ${{ steps.matrix.outputs.matrix }}
+      needs:
+        - prepare
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: "22.x"
+
+        - name: Install dependencies
+          run: npm install
+
+        - name: Generate matrix
+          run: npm run genmatrix
+          env:
+            DEFAULT_SOURCE_URL: "https://github.com/${{ github.repository }}"
+            IMAGES_FOLDER: "apps"
+            INCLUDE_IMAGES: ${{ needs.prepare.outputs.images-to-build }}
+
+        - name: Save Matrix
+          id: matrix
+          run: |
+            matrix="$(cat matrix.json)"
+            echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+
+    build:
+      name: Build ${{ matrix.job_name }} image
+      needs:
+        - generate-matrix
+      permissions:
+        packages: write
+      strategy:
+        matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+        fail-fast: false
+      uses: ./.github/workflows/workflow_call-build_image.yaml
+      with:
+        app: ${{ matrix.job_name }}
+        image: |-
+          ghcr.io/spiceratops/${{ matrix.job_name }}
+        platforms: ${{ toJSON(matrix.platforms) }}
+        tags: |-
+          type=raw,value=${{ matrix.targetVersion }}
+          type=raw,value=latest
+          type=semver,pattern={{major}}.{{minor}},value=${{ matrix.targetVersion }}
+          type=semver,pattern={{major}},value=${{ matrix.targetVersion }}
+        build-args: |-
+          VERSION=${{ matrix.sourceVersion }}
+        context: ${{ matrix.context }}
+        dockerfile: ${{ matrix.dockerfile }}
+        labels: |-
+          org.opencontainers.image.title=${{ matrix.job_name }}
+          org.opencontainers.image.source=${{ matrix.source_repo }}
+        annotations: |-
+          org.opencontainers.image.title=${{ matrix.job_name }}
+          org.opencontainers.image.source=${{ matrix.source_repo }}
+        dry-run: ${{ github.ref != 'refs/heads/main' || github.event_name == 'pull_request' }}
+        type: ${{ matrix.type }}
+        tests-enabled: ${{ matrix.tests.enabled }}
+
+    build_success:
+      name: Build matrix success
+      needs:
+        - build
+      if: ${{ !cancelled() }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Check matrix status
+          if: ${{ contains(needs.*.result, 'failure') }}
+          run: exit 1

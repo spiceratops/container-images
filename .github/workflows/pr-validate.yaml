@@ -1,29 +1,85 @@
 ---
-  # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
   name: "Pull Request: Validate"
 
   on:
     pull_request:
-      branches: ["main"]
-      types: ["opened", "synchronize", "reopened"]
-
-  concurrency:
-    group: ${{ github.head_ref }}-pr-validate
-    cancel-in-progress: true
+      branches:
+        - main
+      types:
+        - opened
+        - synchronize
+        - reopened
 
   jobs:
-    simple-checks:
-      uses: spiceratops/container-images/.github/workflows/simple-checks.yaml@main
+    pre-commit-check:
+      name: Check pre-commit rules
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-python@v5
+        - uses: pre-commit/action@v3.0.1
+          with:
+            extra_args: --config .pre-commit-config.yaml
 
-    get-changed-images:
-      uses: spiceratops/container-images/.github/workflows/get-changed-images.yaml@main
+    actionlint:
+      name: actionlint
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
-    build-images:
-      needs: ["simple-checks", "get-changed-images"]
-      if: ${{ needs.get-changed-images.outputs.addedOrModified == 'true' }}
-      uses: spiceratops/container-images/.github/workflows/build-images.yaml@main
-      secrets: inherit
-      with:
-        appsToBuild: "${{ needs.get-changed-images.outputs.addedOrModifiedImages }}"
-        pushImages: false
-        sendNotifications: false
+        - name: Get changed files
+          id: changed-files
+          uses: tj-actions/changed-files@v45
+          with:
+            files: |
+              .github/workflows/**/*.yml
+              .github/workflows/**/*.yaml
+
+        - name: Run actionlint
+          if: steps.changed-files.outputs.any_changed == 'true'
+          uses: bjw-s/action-actionlint@v0.1
+          with:
+            actionlint_config: .ci/lint/actionlint.yml
+            file_pattern: ${{ steps.changed-files.outputs.all_changed_files }}
+
+    yamllint:
+      name: yamllint
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Get changed files
+          id: changed-files
+          uses: tj-actions/changed-files@v45
+          with:
+            files: |
+              **.yml
+              **.yaml
+
+        - name: Install yamllint
+          if: steps.changed-files.outputs.any_changed == 'true'
+          run: |
+            pip install yamllint
+
+        - name: Run yamllint
+          if: steps.changed-files.outputs.any_changed == 'true'
+          run: yamllint --config-file .ci/lint/yamllint.yaml --format github ${{ steps.changed-files.outputs.all_changed_files }}
+
+    lint_success:
+      name: Linting success
+      needs:
+        - pre-commit-check
+        - actionlint
+        - yamllint
+      if: ${{ !cancelled() }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Check matrix status
+          if: ${{ contains(needs.*.result, 'failure') }}
+          run: exit 1
