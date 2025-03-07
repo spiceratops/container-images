@@ -9,3 +9,11 @@
   color: "f6412d"
 - name: hold
   color: "ee0701"
+- name: app/lidarr
+  color: 0e8a16
+- name: app/lidarr-plugins
+  color: 0e8a16
+- name: app/nsxlibrarymanager
+  color: 0e8a16
+- name: app/wyoming-glados
+  color: 0e8a16
