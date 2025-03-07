@@ -17,4 +17,21 @@
   ],
   "explorer.autoReveal": false,
   "files.trimTrailingWhitespace": true,
+  "linter.linters": {
+    "yamllint": {
+      "configFiles": [
+        ".ci/lint/yamllint.yaml"
+      ]
+    }
+  },
+  "yaml.schemas": {
+    "./.vscode/metadata-schema.json": "**/apps/**/metadata.yaml"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+    "editor.quickSuggestions": {
+      "strings": true
+    }
+  },
+  "docker.languageserver.formatter.ignoreMultilineInstructions": true
 }

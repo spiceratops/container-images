@@ -8,6 +8,9 @@
     "will-stone.in-any-case",
     "BriteSnow.vscode-toggle-quotes",
     "EditorConfig.editorconfig",
-    "PKief.material-icon-theme"
+    "PKief.material-icon-theme",
+    "fnando.linter",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker"
   ]
 }

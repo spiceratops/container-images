@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Generate release matrix",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/.ci/scripts/generate_release_matrix.mjs",
+      "env": {
+        "DEFAULT_SOURCE_URL": "https://github.com/spiceratops/container-images",
+        "IMAGE_FOLDER": "apps"
+      }
+    }
+  ]
+}
