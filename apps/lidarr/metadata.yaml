@@ -1,22 +1,10 @@
 ---
 app: lidarr
-semver: true
-channels:
-  - name: master
-    platforms: ["linux/amd64", "linux/arm64"]
-    stable: true
-    tests:
-      enabled: true
-      type: web
-  - name: develop
-    platforms: ["linux/amd64", "linux/arm64"]
-    stable: false
-    tests:
-      enabled: true
-      type: web
-  - name: nightly
-    platforms: ["linux/amd64", "linux/arm64"]
-    stable: false
-    tests:
-      enabled: true
-      type: web
+source_repo: https://github.com/Lidarr/Lidarr
+# renovate: depName=Lidarr/Lidarr
+version: 2.9.6.4552
+platforms:
+  - linux/amd64
+type: cli
+tests:
+  enabled: true

@@ -1,10 +1,10 @@
 ---
 app: nsxlibrarymanager
-semver: true
-channels:
-  - name: master
-    platforms: ["linux/amd64", "linux/arm64"]
-    stable: true
-    tests:
-      enabled: true
-      type: web
+source_repo: https://github.com/ivaano/nsxlibrarymanager
+# renovate: depName=ivaano/nsxlibrarymanager
+version: 0.4.2
+platforms:
+  - linux/amd64
+type: cli
+tests:
+  enabled: true
