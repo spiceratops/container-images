@@ -1,4 +1,5 @@
 FROM ghcr.io/ivaano/nsxlibrarymanager:0.4.4
+USER app
 WORKDIR /app
 
 RUN chown 1000:1000 /app -R
