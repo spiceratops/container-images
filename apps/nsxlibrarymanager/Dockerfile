@@ -1,4 +1,4 @@
-FROM ghcr.io/ivaano/nsxlibrarymanager:0.4.2
+FROM ghcr.io/ivaano/nsxlibrarymanager:0.4.4
 WORKDIR /app
 
 RUN chown 1000:1000 /app -R
