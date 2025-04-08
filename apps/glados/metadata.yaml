@@ -3,6 +3,7 @@ app: glados
 source_repo: https://github.com/dnhkng/GLaDOS
 platforms:
   - linux/amd64
+version: 0.1.1
 type: cli
 tests:
   enabled: true
