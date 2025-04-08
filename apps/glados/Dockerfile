@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install uv
 
 RUN \
-git clone --recurse-submodules https://github.com/dnhkng/GLaDOS.git /app
+git clone --recurse-submodules https://github.com/dnhkng/GLaDOS.git
 
 WORKDIR /app
 COPY pyproject.toml README.md ./
