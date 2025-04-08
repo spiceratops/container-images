@@ -9,12 +9,9 @@ RUN apt-get update && apt-get install -y \
 RUN pip install uv
 
 RUN \
-git clone --recurse-submodules https://github.com/dnhkng/GLaDOS.git
+git clone --recurse-submodules https://github.com/dnhkng/GLaDOS.git /app
 
 WORKDIR /app
-COPY pyproject.toml README.md ./
-COPY models/ ./models/
-COPY src/ ./src/
 
 RUN uv sync --extra api --extra cpu --no-dev \
   && uv run glados download
