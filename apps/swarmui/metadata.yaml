@@ -3,7 +3,7 @@ app: swarmui
 source_repo: https://github.com/mcmonkeyprojects/SwarmUI
 platforms:
   - linux/amd64
-version: 0.9.5-Beta
+version: "0.9.5-Beta"
 type: cli
 tests:
   enabled: false
