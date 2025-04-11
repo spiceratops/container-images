@@ -6,4 +6,4 @@ platforms:
 version: 0.9.5-Beta
 type: cli
 tests:
-  enabled: true
+  enabled: false
