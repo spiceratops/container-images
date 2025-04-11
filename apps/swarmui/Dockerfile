@@ -10,6 +10,7 @@ RUN apt install -y libglib2.0-0 libgl1
 
 RUN \
 git clone --recurse-submodules --branch ${VERSION} --single-branch https://github.com/mcmonkeyprojects/SwarmUI.git /SwarmUI
+RUN bash /SwarmUI/launchtools/comfy-install-linux.sh
 
 RUN chown -R $UID:$UID /SwarmUI
 
