@@ -8,15 +8,14 @@ RUN apt install -y git wget build-essential python3.11 python3.11-venv python3.1
 
 RUN apt install -y libglib2.0-0 libgl1
 
-ADD https://github.com/mcmonkeyprojects/SwarmUI.git#${VERSION} .
-COPY . ./SwarmUI
+ADD https://github.com/mcmonkeyprojects/SwarmUI.git#${VERSION} /app
 
-RUN chown -R $UID:$UID ./SwarmUI
+RUN chown -R $UID:$UID /app
 
 RUN git config --global --add safe.directory '*'
 
 EXPOSE 7801
 
-ENTRYPOINT ["bash", "/SwarmUI/launchtools/docker-standard-inner.sh"]
+ENTRYPOINT ["bash", "/app/launchtools/docker-standard-inner.sh"]
 
 LABEL org.opencontainers.image.source="https://github.com/mcmonkeyprojects/SwarmUI"
