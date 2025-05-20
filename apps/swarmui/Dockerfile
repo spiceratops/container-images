@@ -17,6 +17,6 @@ RUN git config --global --add safe.directory '*'
 
 EXPOSE 7801
 
-ENTRYPOINT ["bash", "/SwarmUI/launchtools/docker-standard-inner.sh"]
+ENTRYPOINT ["bash", "/SwarmUI/launchtools/docker-standard-inner.sh", "fixperms"]
 
 LABEL org.opencontainers.image.source="https://github.com/mcmonkeyprojects/SwarmUI"
