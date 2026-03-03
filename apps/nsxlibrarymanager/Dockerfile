@@ -1,4 +1,4 @@
-FROM ghcr.io/ivaano/nsxlibrarymanager:v0.5.0
+FROM ghcr.io/ivaano/nsxlibrarymanager:v0.5.3
 USER app
 WORKDIR /app
 
