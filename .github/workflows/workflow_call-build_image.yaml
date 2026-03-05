@@ -104,7 +104,7 @@
             annotations: |-
               ${{ inputs.annotations }}
 
-        - uses: docker/build-push-action@v6
+        - uses: docker/build-push-action@v7
           name: Build test image
           if: ${{ inputs.tests-enabled == true }}
           id: build-for-test
@@ -141,7 +141,7 @@
             fi
             dgoss run "${image_name}" "${goss_args[@]}"
 
-        - uses: docker/build-push-action@v6
+        - uses: docker/build-push-action@v7
           name: Build image
           id: build
           env:
