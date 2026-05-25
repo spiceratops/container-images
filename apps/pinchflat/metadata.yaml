@@ -1,0 +1,9 @@
+---
+app: pinchflat
+source_repo: https://github.com/kieraneglin/pinchflat
+platforms:
+  - linux/amd64
+version: v2025.9.26
+type: cli
+tests:
+  enabled: false
