@@ -39,6 +39,8 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -f /var/lib/apt/lists/*_*
 
+RUN git clone --recurse-submodules https://github.com/kieraneglin/pinchflat.git /app
+
 # prepare build dir
 WORKDIR /app
 
