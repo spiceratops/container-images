@@ -1,4 +1,4 @@
-FROM nvidia/cuda:13.2.1-runtime-ubuntu22.04
+FROM nvidia/cuda:13.3.1-runtime-ubuntu22.04
 
 WORKDIR /usr/src
 
